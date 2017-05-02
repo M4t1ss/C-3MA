@@ -1,0 +1,4 @@
+testFile = ./morphotagged.lv
+loadClassifier = nermodel/lv-ner-model.ser.gz
+inputEncoding = utf-8
+outputEncoding = utf-8
