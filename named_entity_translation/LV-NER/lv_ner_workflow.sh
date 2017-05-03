@@ -7,7 +7,7 @@
 #	* morphotagged.lv 			- morphologically tagged file
 #	* nertagged.lv 				- named entity tagged file
 #	* nertagged.lv.pipe 		- pipe delimited named entity tagged file with broken new line count
-#	* nertagged.lv.pipe.correct - the final pipe delimited named entity tagged file
+#	* nertagged.lv.pipe.us 		- the final pipe delimited named entity tagged file
 #Example:
 #	./lv_ner_workflow.sh source.lv
 
@@ -26,4 +26,4 @@ java -mx1g -Xmx15360m -Dfile.encoding=utf-8 \
 php tagToPipe.php ./nertagged.lv
 
 #Get rid of excess new lines created by the morphological tagger
-php fixNewLines.php $1 ./nertagged.lv.pipe
+php fixLinesUnderscores.php $1 ./nertagged.lv.pipe

@@ -16,26 +16,45 @@ $badF 	= $argv[2];
 
 $inG  = fopen($goodF, "r") or die("Can't open input file!");
 $inB  = fopen($badF, "r") or die("Can't open input file!");
-$out = fopen($badF.".correct", "a") or die("Can't create output file!");
+$outN = fopen($badF.".nl", "a") or die("Can't create output file!");
+$outU = fopen($badF.".us", "a") or die("Can't create output file!");
 
 
 while (($goodLine = fgets($inG)) !== false) {
 	$badLine = fgets($inB);
 	
 	if(strcmp(cleanForChecking($goodLine), cleanForChecking($badLine)) == 0){
-		fwrite($out, $badLine);
+		fwrite($outN, $badLine);
 	}else{
 		while(strcmp(cleanForChecking($goodLine), cleanForChecking($badLine)) != 0){
 			$badNextLine = fgets($inB);
 			$badLine = str_replace("\n", $badNextLine, $badLine);
 		}
-		fwrite($out, str_replace("\n", "", $badLine).$badNextLine);
+		fwrite($outN, str_replace("\n", "", $badLine).$badNextLine);
 	}
+}
+fclose($outN);
+
+$inN = fopen($badF.".nl", "r") or die("Can't create input file!");
+while (($badLine = fgets($inN)) !== false) {
+	
+	$badTokens = explode(" ", $badLine);
+	
+	$pattern = '/[^\s\n]_/';
+	$matches = preg_grep($pattern, $badTokens);
+	if(count($matches) > 0){
+		foreach($matches as $match){
+			$correct = str_replace("_", " ", $match);
+			$badLine = str_replace($match, $correct, $badLine);
+		}
+	}
+	fwrite($outU, $badLine);
 }
 
 fclose($inG);
 fclose($inB);
-fclose($out);
+fclose($inN);
+fclose($outU);
 
 function cleanForChecking($text){
 	$text = str_replace("_", "", $text);
