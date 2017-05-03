@@ -10,6 +10,12 @@ Convert LVTagger NER output format sentences:
 to:
 	jauni jautājumi par Kalifornijas|LOC ūdensapgādes projektu 
 
+Inputs:
+	* LVTagger NER output format file
+Outputs:
+	* A .pipe file with NER tags right after words delimited with |
+Example:
+	php fixNewLines.php source.lv source.lv.pipe
 */
 
 $inputFile 	= $argv[1];
