@@ -158,6 +158,10 @@ def initialise_neuralmonkey(args):
 
         source = source_sents[index]
         translation = trans_sents[index]
+
+        orig_source = source.split()
+        orig_translation = translation.split()
+
         len_source = len(source.split())
         len_translation = len(translation.split())
 
@@ -175,8 +179,11 @@ def initialise_neuralmonkey(args):
 
         # if bpe sum up attention for bpe parts
         if args.bpe:
-            ne_matrix.clean(1,src_bpe_indeces)
-            ne_matrix.clean(0,trans_bpe_indeces)
+            if matrix.shape[1] < len(orig_source) or matrix.shape[0] < len(orig_translation):
+                ne_matrix.set_skip()
+            else:
+                ne_matrix.clean(1,src_bpe_indeces)
+                ne_matrix.clean(0,trans_bpe_indeces)
         matrices.append(ne_matrix)
 
     return matrices
@@ -266,7 +273,7 @@ def enforce(args,sentences):
             copy = ne_matrix.get_translation()
 
             # if no NEs occur in sentence continue with next sentence
-            if ne_source == ne_matrix.get_source():
+            if ne_source == ne_matrix.get_source() or ne_matrix.should_skip():
                 outfile.write(' '.join(copy)+"\n")
                 continue
 

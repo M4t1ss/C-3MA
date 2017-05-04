@@ -12,6 +12,7 @@ class Ne_Matrix(object):
         self.source = source
         self.translation = translation
         self.matrix = []
+        self.skip = False
 
 
     def add_alignment(self,line):
@@ -23,6 +24,7 @@ class Ne_Matrix(object):
         """cleans attention matrix (adding bpe parts, delete last row)"""
 
         self.matrix = np.array(self.matrix)
+
         for i in indeces[::-1]:
             if axis == 0:
                 self.matrix[i] += self.matrix[i+1]
@@ -57,3 +59,13 @@ class Ne_Matrix(object):
         """returns translated sentence"""
 
         return self.translation
+
+    def set_skip(self,value=True):
+        """should the sentence be skipped"""
+
+        self.skip = value
+
+    def should_skip(self):
+        """returns whether sentence should be skipped or not"""
+
+        return self.skip
