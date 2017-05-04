@@ -11,11 +11,16 @@
 #Example:
 #	./lv_ner_workflow.sh source.lv
 
-#Path to LVTagger (https://github.com/PeterisP/LVTagger)
-LVTagger_path="/home/user/LVTagger" 
+#Path to LVTagger (https://github.com/PeterisP/LVTagger) & Moses Decoder
+LVTagger_path="/data/matiss/tools/gh/LVTagger" 
+mosesdecoder="/opt/bin/mosesdecoder/"
 
-#Get a morphologically tagged file
-$LVTagger_path/morphotagger.sh -conll-x < $1 > ./morphotagged.lv
+#Detruecase, detokenize and get a morphologically tagged file
+cat $1 | \
+$mosesdecoder/scripts/recaser/detruecase.perl | \
+$mosesdecoder/scripts/tokenizer/detokenizer.perl -l lv > ./truecased.lv
+
+$LVTagger_path/morphotagger.sh -conll-x < ./truecased.lv > ./morphotagged.lv
 
 #Tag named entities
 java -mx1g -Xmx15360m -Dfile.encoding=utf-8 \
@@ -26,4 +31,6 @@ java -mx1g -Xmx15360m -Dfile.encoding=utf-8 \
 php tagToPipe.php ./nertagged.lv
 
 #Get rid of excess new lines created by the morphological tagger
-php fixLinesUnderscores.php $1 ./nertagged.lv.pipe
+php fixLinesUnderscores.php ./truecased.lv ./nertagged.lv.pipe
+
+$mosesdecoder/scripts/tokenizer/detokenizer.perl -l lv < ./nertagged.lv.pipe > ./final.nertagged.pipe.lv
