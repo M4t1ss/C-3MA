@@ -60,22 +60,22 @@ def main(args):
             continue
 
         elif option == "p":
-            key = raw_input("Which entry would you like to see?: ")
+            key = raw_input("Which entry would you like to see?: ").decode("utf-8")
             print key, ": ", dic[key]
             print
             continue
 
         elif option == "o":
-            key = raw_input("Which entry should be overwritten: ")
-            val = raw_input("What is the new translation of this source word?: ")
+            key = raw_input("Which entry should be overwritten: ").decode("utf-8")
+            val = raw_input("What is the new translation of this source word?: ").decode("utf-8")
 
             dic[key] = [(val,1)]
             print
             continue
 
         elif option == "a":
-            key = raw_input("For which source word do you want to add a translation: ")
-            val = raw_input("What value should be added to this key?: ")
+            key = raw_input("For which source word do you want to add a translation: ").decode("utf-8")
+            val = raw_input("What value should be added to this key?: ").decode("utf-8")
 
             if key not in dic:
                 dic[key] = [(val,1)]
@@ -85,7 +85,7 @@ def main(args):
             continue
 
         elif option == "d":
-            key = raw_input("Which entry do you want to delete?: ")
+            key = raw_input("Which entry do you want to delete?: ").decode("utf-8")
 
             if key in dic:
                 del dic[key]
