@@ -22,6 +22,7 @@ def parse_args():
     parser.add_argument("-n", "--ne_recognized",  required=True, action="store", dest="ne", help="source file with recognized named entities")
     parser.add_argument("-f", "--framework",  required=True, choices=['nematus', 'neuralmonkey'], action="store", dest="frame", help="nematus / neuralmonkey")
     parser.add_argument("-d", "--dictionary",  required=True, action="store", dest="dic", help="pickle file storing src-trg NE dictionary")
+    parser.add_argument("-l", "--lang",  required=True, action="store", dest="lang", help="target language (en / de / lv)")
 
     # only required for neuralmonkey alignments
     parser.add_argument("-s", "--source",  required=False, action="store", dest="src", help="source sentences")
@@ -204,11 +205,61 @@ def initialise(args):
 
 ################################################################################
 
-def should_enforce(ne,ne_pattern,translation_pattern,finds,ne_matrix):
+def fails_language_specific_rules(lang,ne,ne_pattern,translation_pattern,finds,ne_matrix):
+    """some language specific rules for NE enforcing"""
+
+    token_finds = [token for token,count in finds]
+    without_ending_finds = [token[:-1] for token, count in finds]
+    without_beginning_finds = [token[1:] for token, count in finds]
+
+    # target language: English
+    if lang == "en":
+
+        # don't enforce if NE aligned to the, a, ...
+        if translation_pattern in ["the","'s","a","and"]:
+            return True
+
+        # don't enforce if aligned token ends in s and rest is same as NE or rest is in the dictionary translations
+        if translation_pattern[-1] == "s" and (ne_pattern == translation_pattern[:-1] or translation_pattern[:-1] in token_finds):
+            return True
+
+    # target language: German
+    if lang == "de":
+
+        # don't enforce if NE aligned to der, die, das, ...
+        if translation_pattern in ["der","die","das","und"]:
+            return True
+
+        # don't enforce if aligned token would be in dictionary translations if not for capital / lower first letter
+        # e.g. Russian aligned to "russische" but only "Russische" in dictionary
+        if ne_pattern[1:] == translation_pattern[1:] or translation_pattern[1:] in without_beginning_finds:
+            return True
+
+        # don't enforce if aligned token would be in dictionary translations if not for morphological ending
+        # e.g. American aligned to "Amerikaners" but only "Amerikaner" in dictionary or vice versa
+        if translation_pattern in without_ending_finds or translation_pattern[:-1] in token_finds:
+            return True
+
+        # e.g. Treaty in German Genitiv aligned to "Vertrages" but only "Vertrag" in dictionary
+        if translation_pattern[-2:] == "es" and translation_pattern[:-2] in token_finds:
+            return True
+
+    return False
+
+################################################################################
+
+def should_enforce(lang,ne,ne_pattern,translation_pattern,finds,ne_matrix):
     """checks if a translation should be enforced"""
 
+    translation = ne_matrix.get_translation()
+
+
+    # if some language specific rules are not met - do nothing
+    if fails_language_specific_rules(lang,ne,ne_pattern,translation_pattern,finds,ne_matrix):
+        return False
+
     # if aligned with punctuation - do nothing
-    if translation_pattern in string.punctuation:
+    if translation_pattern in string.punctuation + "@":
         return False
 
     try:
@@ -216,7 +267,7 @@ def should_enforce(ne,ne_pattern,translation_pattern,finds,ne_matrix):
         first = finds[0][0].split()
 
         # if 1 source NE aligned with multiple NEs and these are already in translation - do nothing
-        if len(ne) == 1 and len(first) > 1 and all([True if tok in ne_matrix.get_translation() else False for tok in first]):
+        if len(ne) == 1 and len(first) > 1 and all([True if tok in translation else False for tok in first]):
             return False
 
         # if first entry in dictionary is drastically longer than NE segment - do nothing
@@ -227,15 +278,22 @@ def should_enforce(ne,ne_pattern,translation_pattern,finds,ne_matrix):
         pass
 
     # if any of the options in the dictionary are already in translation - do nothing
-    if any(all(True if tok in ne_matrix.get_translation() else False for tok in f[0].split(' ')) for f in finds):
+    if any(all(True if tok in translation else False for tok in f[0].split(' ')) for f in finds):
         return False
 
     # if all source NE tokens already in translation - do nothing
-    if all(True if tok in ne_matrix.get_translation() else False for tok in ne):
+    if all(True if tok in translation else False for tok in ne):
         return False
 
     # if 'some_token aligned with some_token - do nothing
     if (translation_pattern[:6] == "&apos;" and translation_pattern[6:] == ne_pattern):
+        return False
+
+
+    # if some_token aligned with some_token<s> - do nothing
+    if (ne_pattern[-1] == "s" and ne_pattern[:-1] == translation_pattern):
+        return False
+    if (translation_pattern[-1] == "s" and translation_pattern[:-1] == ne_pattern):
         return False
 
     # if given translation in dictionary entry - to nothing
@@ -244,6 +302,31 @@ def should_enforce(ne,ne_pattern,translation_pattern,finds,ne_matrix):
 
     return True
 
+
+################################################################################
+
+def is_number(token):
+    """identify if token is a number"""
+
+    if re.match(r"^\d+?[\.\,\']?\d*?$",token):
+        return True
+
+    return False
+
+
+################################################################################
+
+def enforce_number(source,match,lang):
+    """some language specific rules for number translation"""
+
+    if lang == "de":
+
+        if re.match(r"\d+?\.\d\d\d",source):
+            return re.sub(r"\.",r",",source)
+
+        return match
+
+    return match
 
 ################################################################################
 
@@ -311,19 +394,30 @@ def enforce(args,sentences):
                 else:
                     reading = False
 
-                # enforce translation for NE group read before
-                if (not reading and force) or typechange:
+                # enforce translation for NE group read before or if current token is a number
+                if (not reading and force) or typechange or is_number(token):
 
                     search_pattern =  re.sub(r"@-@",r"-",' '.join(ne))
                     finds = dic[search_pattern]
+                    matrix = ne_matrix.get_matrix_transposed()
 
                     skip = False
 
-                    # if there are entries in the dictionary for source NE
-                    if finds != []:
+
+                    if is_number(token):
+                        search_pattern = token
+                        candidate = np.argmax(matrix[i])
+
+                        # if max alignment is mirrored
+                        if np.argmax(ne_matrix.get_matrix()[candidate]) == i:
+                            match = ne_matrix.get_translation()[candidate]
+                            copy[candidate] = enforce_number(search_pattern,match,args.lang)
+
+
+                    # if there are entries in the dictionary for whole source NE
+                    elif finds != []:
 
                         aligned = []
-                        matrix = ne_matrix.get_matrix_transposed()
 
                         # get all max alignments from attention matrix
                         for j in ids:
@@ -340,7 +434,7 @@ def enforce(args,sentences):
                             match = ' '.join(ne_matrix.get_translation()[min_i:max_i+1])
 
                             # update translation with dictionary entry
-                            if should_enforce(ne,search_pattern,match,finds,ne_matrix):
+                            if should_enforce(args.lang,ne,search_pattern,match,finds,ne_matrix):
                                 copy[min_i] = finds[0][0]
                                 delete += range(min_i+1,max_i+1)
 
@@ -348,12 +442,11 @@ def enforce(args,sentences):
                             skip = True
 
                     # else iterate over single NE tokens
-                    if finds == [] or skip:
+                    elif finds == [] or skip:
 
                         for j in ids:
                             search_pattern = ne_matrix.get_source()[j]
                             finds = dic[search_pattern]
-                            matrix = ne_matrix.get_matrix_transposed()
                             candidate = np.argmax(matrix[j])
 
                             # if max alignment is mirrored
@@ -361,9 +454,12 @@ def enforce(args,sentences):
                                 match = ne_matrix.get_translation()[candidate]
 
                                 # update translation with dictionary entry
-                                if should_enforce(ne,search_pattern,match,finds,ne_matrix):
+                                if should_enforce(args.lang,ne,search_pattern,match,finds,ne_matrix):
                                     if ne_type == "P":
-                                        copy[candidate] = search_pattern
+                                        if finds != []:
+                                            copy[candidate] = finds[0][0]
+                                        else:
+                                            copy[candidate] = search_pattern
                                     else:
                                         # if ORG or LOC in dictionary take from there
                                         if finds != []:
