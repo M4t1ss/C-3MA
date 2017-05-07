@@ -28,7 +28,6 @@ def main(args):
                 if checkValue(key, value[0][0]):
                     if key in dic:
                         del dic[key]
-
     try:
         with codecs.open(args.dic,"w") as clean:
             pickle.dump(dic,clean)
@@ -37,20 +36,28 @@ def main(args):
 
 
 def checkValue(key, value):
+    #Remove any dictionary entry that contains any of the following symbols
     badThings = [";", ",", ")", "(", "]", "[", "/", "\\"]
     if (
+            #Remove very long dictionary entries
             len(key) > 70 or
             len(value) > 70 or
+            #Remove dictionary entries with too different lengths
             len(key) > len(value) + 15 or
             len(value) > len(key) + 15 or
+            #Remove dictionary entries with too many words
             len(key.split()) > 5 or
             len(value.split()) > 5 or
+            #Remove dictionary entries with too different word counts
             len(value.split()) > len(key.split()) + 2 or
             len(key.split()) > len(value.split()) + 2 or
+            #Remove dictionary entries that start with a dash
             key[:1] == "-" or
             value[:1] == "-" or
+            #Remove dictionary entries that don't contain any alphabetical characters
             re.search('^[^a-zA-Z]*$', key) or
             re.search('^[^a-zA-Z]*$', value) or
+            #Remove any dictionary entry that contains any of the mentioned symbols
             any(badThing in key for badThing in badThings) or
             any(badThing in value for badThing in badThings)
         ):
