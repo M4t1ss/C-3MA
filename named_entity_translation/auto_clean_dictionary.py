@@ -23,11 +23,15 @@ def main(args):
     # read NE dictionary
     with codecs.open(args.dic, "r" ) as opened:
         dic = pickle.load(opened)
-        for key, value in dic.copy().items():
-            if len(value) > 0:
-                if checkValue(key, value[0][0]):
-                    if key in dic:
-                        del dic[key]
+        for key, values in dic.copy().items():
+
+            for index,value in zip(range(len(values)-1,-1,-1),values[::-1]):
+
+                if checkValue(key, value[0]):
+                        del dic[key][index]
+
+            if dic[key] == []:
+                del dic[key]
     try:
         with codecs.open(args.dic,"w") as clean:
             pickle.dump(dic,clean)
