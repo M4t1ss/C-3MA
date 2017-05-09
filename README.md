@@ -6,4 +6,5 @@ the 2017 Workshops on Statistical Machine Translation [http://www.statmt.org/wmt
 * named_entity_translation - scripts for prepairing parallel corpora with named entity tags 
 * filtering - scripts for filtering parallel text files 
 * scoring - scripts for scoring translations with language models
+* post-processing - scripts for post-processing output translations
 * shuffle_parallel.sh - shuffle two files of parallel sentences
