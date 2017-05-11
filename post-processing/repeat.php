@@ -22,6 +22,16 @@ function sortByLength($a,$b){
 
 function replace_repetitions($str){
 	
+    //escape special chars
+	$str = str_replace("&quot;", "quot-quot", $str);
+	$str = str_replace("&amp;", "amp-amp", $str);
+	$str = str_replace("&apos;", "apos-apos", $str);
+	$str = str_replace("&#124;", "124-124", $str);
+	$str = str_replace("&#91;", "91-91", $str);
+	$str = str_replace("&#93;", "93-93", $str);
+	$str = str_replace("&lt;", "lt-lt", $str);
+	$str = str_replace("&gt;", "gt-gt", $str);
+
 	$results = get_repetitions($str);
 	$workaround = $results;
 	usort($results,'sortByLength');
@@ -39,6 +49,16 @@ function replace_repetitions($str){
 		if(count(array_diff($workaround, $results)) == 0)
 			break;
 	}
+	
+	$str = str_replace("quot-quot", "&quot;", $str);
+	$str = str_replace("amp-amp", "&amp;", $str);
+	$str = str_replace("apos-apos", "&apos;", $str);
+	$str = str_replace("124-124", "&#124;", $str);
+	$str = str_replace("91-91", "&#91;", $str);
+	$str = str_replace("93-93", "&#93;", $str);
+	$str = str_replace("lt-lt", "&lt;", $str);
+	$str = str_replace("gt-gt", "&gt;", $str);
+	
 	return $str;
 }
 
