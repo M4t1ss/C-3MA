@@ -9,6 +9,7 @@ $outFile 	= fopen($input_file.".out", "w") or die("Can't create output file!");
 
 while (($sentence = fgets($inFile)) !== false) {
 	$output_sentence = replace_repetitions($sentence);
+	$output_sentence = str_replace("@@", "", $output_sentence);
     fwrite($outFile, $output_sentence);
 }
 
@@ -42,9 +43,11 @@ function replace_repetitions($str){
 		$workaround = $results;
 		foreach($results as $result){
 			$str = str_replace(" ".$result." ".$result." ", " ".$result." ", $str);
-			$str = str_replace("\n".$result." ".$result." ", "\n".$result." ", $str);
 			$str = str_replace(" ".$result." ".$result."\n", " ".$result."\n", $str);
-			$str = str_replace("\n".$result." ".$result."\n", "\n".$result."\n", $str);
+			if(strpos($str, $result." ".$result) == 0){
+				$str = str_replace($result." ".$result." ", $result." ", $str);
+				$str = str_replace($result." ".$result."\n", $result."\n", $str);
+			}
 		}
 		$results = get_repetitions($str);
 		usort($results,'sortByLength');
@@ -66,7 +69,7 @@ function replace_repetitions($str){
 }
 
 function get_repetitions($str){
-	$found = str_word_count(strtolower($str),1);
+	$found = str_word_count($str,1);
 	//get all words with occurance of more then 1
 	$counts = array_count_values($found);
 	$repeated = array_keys(array_filter($counts,function($a){return $a > 1;}));
@@ -87,6 +90,11 @@ function get_repetitions($str){
 			}
 		}
 		if(!empty($additions)) array_splice($found,0,0,$additions);
+	}
+	foreach($results as $key => $result){
+		if(strpos($str, $result." ".$result) === false){
+			unset($results[$key]);
+		}
 	}
 	return $results;
 }
