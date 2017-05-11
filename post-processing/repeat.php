@@ -31,6 +31,8 @@ function replace_repetitions($str){
 	$str = str_replace("&#93;", "93-93", $str);
 	$str = str_replace("&lt;", "lt-lt", $str);
 	$str = str_replace("&gt;", "gt-gt", $str);
+	$str = str_replace(" , ", " comma-comma ", $str);
+	$str = str_replace(" , ", " comma-comma ", $str);
 
 	$results = get_repetitions($str);
 	$workaround = $results;
@@ -58,6 +60,7 @@ function replace_repetitions($str){
 	$str = str_replace("93-93", "&#93;", $str);
 	$str = str_replace("lt-lt", "&lt;", $str);
 	$str = str_replace("gt-gt", "&gt;", $str);
+	$str = str_replace(" comma-comma ", " , ", $str);
 	
 	return $str;
 }
