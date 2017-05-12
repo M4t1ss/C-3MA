@@ -39,15 +39,11 @@ function replace_repetitions($str){
 	$workaround = $results;
 	usort($results,'sortByLength');
 	
+	$prepositions = array("of", "at", "by", "but", "for", "to", "with", "without", "of the", "in the");
 	while(count($results) > 0){
 		$workaround = $results;
 		foreach($results as $result){
-			$str = str_replace(" ".$result." ".$result." ", " ".$result." ", $str);
-			$str = str_replace(" ".$result." ".$result."\n", " ".$result."\n", $str);
-			if(strpos($str, $result." ".$result) == 0){
-				$str = str_replace($result." ".$result." ", $result." ", $str);
-				$str = str_replace($result." ".$result."\n", $result."\n", $str);
-			}
+			$str = repetitions_with_prepositions($str, $result, $prepositions);
 		}
 		$results = get_repetitions($str);
 		usort($results,'sortByLength');
@@ -65,6 +61,24 @@ function replace_repetitions($str){
 	$str = str_replace("gt-gt", "&gt;", $str);
 	$str = str_replace(" comma-comma ", " , ", $str);
 	
+	return $str;
+}
+
+function repetitions_with_prepositions($str, $repetition, $prepositions){
+	$str = str_replace(" ".$repetition." ".$repetition." ", " ".$repetition." ", $str);
+	$str = str_replace(" ".$repetition." ".$repetition."\n", " ".$repetition."\n", $str);
+	if(strpos($str, $repetition." ".$repetition) == 0){
+		$str = str_replace($repetition." ".$repetition." ", $repetition." ", $str);
+		$str = str_replace($repetition." ".$repetition."\n", $repetition."\n", $str);
+	}
+	foreach($prepositions as $preposition){
+		$str = str_replace(" ".$repetition." ".$preposition." ".$repetition." ", " ".$repetition." ", $str);
+		$str = str_replace(" ".$repetition." ".$preposition." ".$repetition."\n", " ".$repetition."\n", $str);
+			if(strpos($str, $repetition." ".$preposition." ".$repetition) == 0){
+				$str = str_replace($repetition." ".$preposition." ".$repetition." ", $repetition." ", $str);
+				$str = str_replace($repetition." ".$preposition." ".$repetition."\n", $repetition."\n", $str);
+			}
+	}
 	return $str;
 }
 
@@ -92,7 +106,7 @@ function get_repetitions($str){
 		if(!empty($additions)) array_splice($found,0,0,$additions);
 	}
 	foreach($results as $key => $result){
-		if(strpos($str, $result." ".$result) === false){
+		if(strpos($str, $result." ".$result) === false && strpos($str, $result." of the ".$result) === false && strpos($str, $result." of ".$result) === false){
 			unset($results[$key]);
 		}
 	}
