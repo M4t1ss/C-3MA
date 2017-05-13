@@ -1,20 +1,13 @@
 ﻿<?php
 
-//Input parameters
-$input_file = $argv[1];
+//Read from standard input
+$fpf = file("php://stdin");
 
-//Open files
-$inFile 	= fopen($input_file, "r") or die("Can't open input file!");
-$outFile 	= fopen($input_file.".out", "w") or die("Can't create output file!");
-
-while (($sentence = fgets($inFile)) !== false) {
+foreach($fpf as $sentence){
 	$output_sentence = replace_repetitions($sentence);
 	$output_sentence = str_replace("@@", "", $output_sentence);
-    fwrite($outFile, $output_sentence);
+	echo $output_sentence;
 }
-
-fclose($outFile);
-fclose($inFile);
 
 function sortByLength($a,$b){
   if($a == $b) return 0;
@@ -39,7 +32,7 @@ function replace_repetitions($str){
 	$workaround = $results;
 	usort($results,'sortByLength');
 	
-	$prepositions = array("of", "at", "by", "but", "for", "to", "with", "without", "of the", "in the");
+	$prepositions = array("par", "of", "at", "by", "but", "for", "to", "with", "without", "of the", "in the");
 	while(count($results) > 0){
 		$workaround = $results;
 		foreach($results as $result){
