@@ -1,5 +1,5 @@
 ![alt text](https://github.com/M4t1ss/C-3MA/blob/master/C-3MA.png?raw=true "C-3MA")
-# Scripts for Tartu Neural Machine Translations systems for WMT 17
+# Scripts for Tartu Neural MT systems for WMT 17
 This repository contains scripts and an example configuration files used for the Tartu Neural MT submission (C-3MA) for the shared translation task at 
 the 2017 Workshops on Statistical Machine Translation [http://www.statmt.org/wmt17/](http://www.statmt.org/wmt17/)
 * NeuralMonkey-config - example configuration files for training NMT systems with Neural Monkey 
