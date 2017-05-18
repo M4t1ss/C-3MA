@@ -3,7 +3,7 @@
 This repository contains scripts and an example configuration files used for the Tartu Neural MT submission (C-3MA) for the shared translation task at 
 the 2017 Workshops on Statistical Machine Translation [http://www.statmt.org/wmt17/](http://www.statmt.org/wmt17/)
 * NMT-combination - scripts for combining output of NMT systems
-* NMT-config - example configuration files for training NMT systems with (Neural Monkey)[https://github.com/ufal/neuralmonkey/] and (Nematus)[https://github.com/rsennrich/nematus/]
+* NMT-config - example configuration files for training NMT systems with [Neural Monkey](https://github.com/ufal/neuralmonkey/) and [Nematus](https://github.com/rsennrich/nematus/)
 * named-entity-translation - scripts for prepairing parallel corpora with named entity tags 
 * filtering - scripts for filtering parallel text files 
 * scoring - scripts for scoring translations with language models
