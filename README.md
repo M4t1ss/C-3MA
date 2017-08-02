@@ -12,3 +12,22 @@ the 2017 Workshops on Statistical Machine Translation [http://www.statmt.org/wmt
 
 The title is derrived from the authors first names (Chantal, and three Ma's - Maksym, Mark, Matiss). It's also a reference to 
 [C-3PO](https://en.wikipedia.org/wiki/C-3PO) - the translation droid from Star Wars.
+	
+	
+Publications
+---------
+
+If you use this tool, please cite the following paper:
+
+Matīss Rikters, Chantal Amrhein, Maksym Del, Mark Fishel (2017). "[C-3MA: Tartu-Riga-Zurich Translation Systems for WMT17.](http://www.statmt.org/wmt17/papers.html)" In Proceedings of the Second Conference on Machine Translation (WMT17) (2017).
+
+```
+@inproceedings{Rikters-etal:2017:WMT,
+	author = {Rikters, Matīss and Amrhein, Chantal and Del, Maksym and Fishel, Mark},
+	booktitle = {Proceedings of the Second Conference on Machine Translation},
+	title = {{C-3MA: Tartu-Riga-Zurich Translation Systems for WMT17}},
+	publisher = {Association for Computational Linguistics},
+	address={Copenhagen, Denmark},
+	year = {2017}
+}
+```
